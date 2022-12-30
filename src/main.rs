@@ -1,11 +1,41 @@
-use std::collections::HashSet;
+use std::cmp;
+use std::collections::{HashSet, VecDeque};
 use std::fmt::Debug;
 use std::fs;
 use std::str::FromStr;
 use std::vec::Vec;
 
 fn main() {
-    day_5();
+    day_6();
+}
+
+fn day_6() {
+    let contents =
+        fs::read_to_string("input/day6.txt").expect("Should have been able to open te file");
+
+    let mut four = Vec::new();
+
+    for (i, c) in contents.chars().enumerate() {
+        four.push(c);
+        let set = HashSet::<_>::from_iter(&four[cmp::max(i as i32 - 3, 0) as usize..]);
+        if set.len() == 4 {
+            println!("{}", i + 1);
+            break;
+        }
+    }
+
+    let mut four = Vec::new();
+
+    for (i, c) in contents.chars().enumerate() {
+        four.push(c);
+        let set = HashSet::<_>::from_iter(&four[cmp::max(i as i32 - 13, 0) as usize..]);
+        if set.len() == 14 {
+            println!("{}", i + 1);
+            break;
+        }
+    }
+
+    // println!("{}", contents);
 }
 
 fn day_5() {
