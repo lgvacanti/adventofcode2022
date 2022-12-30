@@ -1,9 +1,11 @@
+use std::fmt::Debug;
 use std::fs;
 use std::vec::Vec;
 use std::collections::HashSet;
+use std::str::FromStr;
 
 fn main() {
-    day_3();
+    day_4();
 }
 
 fn day_1() {
@@ -137,5 +139,63 @@ fn day_3() {
     }
 
     println!("Sum of priorities is {sum}");
+
+}
+
+fn day_4() {
+    let contents = fs::read_to_string("input/day4.txt")
+        .expect("Should have been able to open te file");
+
+    #[derive(Debug)]
+    struct Assignment {
+        start: u32,
+        end: u32
+    }
+
+    impl Assignment {
+        fn contains(&self, other: &Assignment) -> bool {
+            self.start <= other.start && self.end >= other.end
+        }
+
+        fn overlaps(&self, other: &Assignment) -> bool {
+            (self.start <= other.start && other.start <= self.end) || (self.start <= other.end && other.end <= self.end) || (other.start <= self.start && other.end >= self.end)
+        }
+    }
+
+    impl TryFrom<&str> for Assignment {
+        type Error = &'static str;
+
+        fn try_from(s: &str) -> Result<Self, Self::Error> {
+            // expected input example: "5-20"
+            let mut parts = s.split("-");
+            let (start, end) = (u32::from_str(parts.next().unwrap()).unwrap() as u32, u32::from_str(parts.next().unwrap()).unwrap() as u32);
+            Ok(Self {
+                start,
+                end
+            })
+        }
+    }
+
+    let mut to_reconsider = 0;
+    let mut overlapping = 0;
+
+    for line in contents.lines() {
+        let mut split = line.split(",");
+        let (one, two) = (Assignment::try_from(split.next().unwrap()), Assignment::try_from(split.next().unwrap()));
+
+        match (&one, &two) {
+            (Ok(one), Ok(two)) => if one.contains(&two) || two.contains(&one) {to_reconsider += 1},
+            _ => todo!()
+        }
+
+        match (one, two) {
+            (Ok(one), Ok(two)) => if one.overlaps(&two)  {overlapping += 1},
+            _ => todo!()
+        }
+    }
+
+    println!("{to_reconsider} pairs fully contain the other.");
+    println!("{overlapping} pairs overlap with each the other.");
+
 
 }
