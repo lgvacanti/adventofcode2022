@@ -5,12 +5,140 @@ use std::str::FromStr;
 use std::vec::Vec;
 
 fn main() {
-    day_4();
+    day_5();
 }
 
 fn day_5() {
     let contents =
         fs::read_to_string("input/day5.txt").expect("Should have been able to open te file");
+
+    let mut state: Vec<Vec<char>> = vec![
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+    ];
+
+    load_state(&mut state, &contents);
+
+    // println!("{state:?}");
+
+    for line in contents.lines() {
+        if line.starts_with("move") {
+            move_crates(line, &mut state);
+        }
+    }
+
+    println!("CrateMover 9000");
+    for mut v in state {
+        print!("{}", v.pop().unwrap());
+    }
+    println!();
+
+    let mut state: Vec<Vec<char>> = vec![
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+        vec![],
+    ];
+
+    load_state(&mut state, &contents);
+
+    for line in contents.lines() {
+        if line.starts_with("move") {
+            move_crates2(line, &mut state);
+        }
+    }
+
+    println!("CrateMover9001");
+    for mut v in state {
+        print!("{}", v.pop().unwrap());
+    }
+}
+
+fn move_crates2(line: &str, state: &mut Vec<Vec<char>>) {
+    let mut split = line.split(" ");
+
+    let mut intermediate: Vec<char> = vec![];
+
+    let (n, i1, i2);
+
+    if let (_, Some(a), _, Some(b), _, Some(c)) = (
+        split.next(),
+        split.next(),
+        split.next(),
+        split.next(),
+        split.next(),
+        split.next(),
+    ) {
+        n = usize::from_str(a).unwrap();
+        i1 = usize::from_str(b).unwrap() - 1;
+        i2 = usize::from_str(c).unwrap() - 1;
+    } else {
+        todo!()
+    };
+
+    for _ in 0..n {
+        let c = state[i1].pop().unwrap();
+        intermediate.push(c);
+    }
+
+    for _ in 0..n {
+        let c = intermediate.pop().unwrap();
+        state[i2].push(c);
+    }
+}
+
+fn move_crates(line: &str, state: &mut Vec<Vec<char>>) {
+    let mut split = line.split(" ");
+
+    let (n, i1, i2);
+
+    if let (_, Some(a), _, Some(b), _, Some(c)) = (
+        split.next(),
+        split.next(),
+        split.next(),
+        split.next(),
+        split.next(),
+        split.next(),
+    ) {
+        n = usize::from_str(a).unwrap();
+        i1 = usize::from_str(b).unwrap() - 1;
+        i2 = usize::from_str(c).unwrap() - 1;
+    } else {
+        todo!()
+    };
+
+    for _ in 0..n {
+        let c = state[i1].pop().unwrap();
+        state[i2].push(c);
+    }
+}
+
+fn load_state(state: &mut Vec<Vec<char>>, contents: &str) {
+    for line in contents.lines() {
+        for (i, c) in line.chars().enumerate() {
+            // 1 -> 1, 5 -> 2, 9 -> 3, 13 -> 4
+            if c.is_ascii_alphabetic() && c.is_uppercase() {
+                state[(i + 3) / 4 - 1].push(c)
+            }
+        }
+    }
+
+    // Need to reverse the stacks since they were placed upside down.
+    for vec in state {
+        vec.reverse();
+    }
 }
 
 fn day_1() {
