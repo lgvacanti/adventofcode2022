@@ -6,7 +6,143 @@ use std::str::FromStr;
 use std::vec::Vec;
 
 fn main() {
-    day_7();
+    day_8();
+}
+
+fn day_8() {
+    let contents =
+        fs::read_to_string("input/day8.txt").expect("Should have been able to open te file");
+
+    let mut arr = Vec::new();
+    let width = contents.lines().next().unwrap().len();
+    let height = contents.lines().count();
+
+    for line in contents.lines() {
+        for c in line.chars() {
+            arr.push(c.to_digit(10).unwrap());
+        }
+    }
+
+    let mut visible = 0;
+    for y in 0..height {
+        for x in 0..width {
+            //println!("x:{x}, y:{y}: {}", is_visible(&arr, x, y, width));
+            if is_visible(&arr, x, y, width) {
+                visible += 1;
+                print!("1");
+            } else {
+                print!("0");
+            }
+        }
+        println!();
+    }
+
+    println!("{visible} trees are visible.");
+
+    let mut max_ss = 0;
+    for y in 0..height {
+        for x in 0..width {
+            //println!("x:{x}, y:{y}: {}", is_visible(&arr, x, y, width));
+            max_ss = cmp::max(max_ss, scenic_score(&arr, x, y, width));
+        }
+    }
+
+    println!("{max_ss} is the highest scenic score.")
+}
+
+fn is_visible(arr: &Vec<u32>, x: usize, y: usize, width: usize) -> bool {
+    let tree_height = arr[x + y * width];
+
+    let v_left = &arr[y * width..y * width + x]
+        .iter()
+        .filter(|x| x >= &&tree_height)
+        .count()
+        == &0usize;
+    let v_right = &arr[y * width + x + 1..(y + 1) * width]
+        .iter()
+        .filter(|x| x >= &&tree_height)
+        .count()
+        == &0usize;
+    let v_top = &arr[..x + y * width]
+        .iter()
+        .enumerate()
+        .filter(|(i, h)| i % width == x && h >= &&tree_height)
+        .count()
+        == &0usize;
+    let v_bottom = &arr[x + y * width + 1..]
+        .iter()
+        .enumerate()
+        .filter(|(i, h)| (i + x + y * width + 1) % width == x && h >= &&tree_height)
+        .count()
+        == &0usize;
+
+    if x == 3 && y == 3 {
+        //println!("{v_left},{v_right},{v_top},{v_bottom}");
+        // dbg!(&arr[x + y * width + 1..]
+        //     .iter()
+        //     .enumerate()
+        //     .filter(|(i, h)| i % width == x && h >= &&tree_height));
+        // dbg!(tree_height);
+    }
+
+    //println!("{v_left},{v_right},{v_top},{v_bottom}");
+    v_left || v_right || v_top || v_bottom
+}
+
+fn scenic_score(arr: &Vec<u32>, x: usize, y: usize, width: usize) -> usize {
+    if x == 0 || x == width - 1 || y == 0 || y == width - 1 {
+        return 0;
+    }
+
+    let tree_height = arr[x + y * width];
+
+    let v_left = &arr[y * width..y * width + x]
+        .iter()
+        .rev()
+        .enumerate()
+        .find(|(i, x)| x >= &&tree_height)
+        .unwrap_or((x - 1, &0))
+        .0
+        + 1;
+    let v_right = &arr[y * width + x + 1..(y + 1) * width]
+        .iter()
+        .enumerate()
+        .find(|(i, x)| x >= &&tree_height)
+        .unwrap_or((width - x - 2, &0))
+        .0
+        + 1;
+    let v_top = &arr[..x + y * width]
+        .iter()
+        .enumerate()
+        .rev()
+        .filter(|(i, _)| i % width == x)
+        .map(|(_, x)| x)
+        .enumerate()
+        .find(|(i, x)| x >= &&tree_height)
+        .unwrap_or((y - 1, &0))
+        .0
+        + 1;
+    let v_bottom = &arr[x + y * width + 1..]
+        .iter()
+        .enumerate()
+        .filter(|(i, _)| (i + x + y * width + 1) % width == x)
+        .map(|(_, x)| x)
+        .enumerate()
+        .find(|(i, x)| x >= &&tree_height)
+        .unwrap_or((width - y - 2, &0))
+        .0
+        + 1;
+
+    if x == 2 && y == 3 {
+        dbg!(&arr[y * width + x + 1..(y + 1) * width]
+            .iter()
+            .rev()
+            .enumerate()
+            .collect::<Vec<(usize, &u32)>>());
+        println!("{v_left},{v_right},{v_top},{v_bottom}");
+    }
+
+    v_left * v_right * v_top * v_bottom
 }
 
 fn day_7() {
