@@ -1,12 +1,91 @@
 use std::cmp;
-use std::collections::{HashSet, VecDeque};
+use std::collections::{HashMap, HashSet, VecDeque};
 use std::fmt::Debug;
 use std::fs;
 use std::str::FromStr;
 use std::vec::Vec;
 
 fn main() {
-    day_6();
+    day_7();
+}
+
+fn day_7() {
+    let contents =
+        fs::read_to_string("input/day7.txt").expect("Should have been able to open te file");
+
+    let mut cwd: Vec<&str> = Vec::new();
+
+    let mut directory_sizes: HashMap<String, u64> = HashMap::new();
+
+    for line in contents.lines() {
+        println!("line: {}", line);
+        if line.starts_with("$") {
+            match line {
+                "$ cd /" => {
+                    cwd.clear();
+                }
+                "$ cd .." => {
+                    cwd.pop();
+                }
+                "$ ls" => (),
+                x => cwd.push(&x[5..]),
+            }
+            //println!("{}", cwd.join("/"));
+        } else if !line.starts_with("dir") {
+            //dbg!(&cwd);
+            let mut directories: Vec<String> = Vec::new();
+            let mut tmp = cwd.clone();
+
+            for _ in 0..=tmp.len() {
+                directories.push(tmp.join("/"));
+                tmp.pop();
+            }
+            //dbg!(&directories);
+            for dir in directories {
+                if directory_sizes.get(&dir).is_none() {
+                    directory_sizes.insert(
+                        dir,
+                        line.split_ascii_whitespace()
+                            .next()
+                            .unwrap()
+                            .parse()
+                            .unwrap(),
+                    );
+                } else {
+                    let x = directory_sizes.get(&dir).unwrap();
+                    directory_sizes.insert(
+                        dir,
+                        line.split_ascii_whitespace()
+                            .next()
+                            .unwrap()
+                            .parse::<u64>()
+                            .unwrap()
+                            + x,
+                    );
+                }
+            }
+        }
+
+        //dbg!(&directory_sizes);
+    }
+
+    for (k, v) in directory_sizes.iter().filter(|(k, v)| v <= &&100000u64) {
+        println!("{k} {v}");
+    }
+
+    let sum: u64 = directory_sizes.values().filter(|x| x <= &&100000u64).sum();
+    println!("Sum of sizes of directories at most 100000: {}", sum);
+
+    let need_to_delete = 30_000_000 - (70_000_000 - directory_sizes.get("").unwrap());
+    println!("Size to be deleted {need_to_delete}");
+
+    let smallest_enough = directory_sizes
+        .values()
+        .filter(|x| x >= &&need_to_delete)
+        .min()
+        .unwrap();
+
+    println!("Smallest that is enough: {}", smallest_enough);
 }
 
 fn day_6() {
