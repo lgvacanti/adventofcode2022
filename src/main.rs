@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::cmp;
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::fmt::Debug;
@@ -6,7 +7,112 @@ use std::str::FromStr;
 use std::vec::Vec;
 
 fn main() {
-    day_8();
+    day_9();
+}
+
+fn day_9() {
+    let contents =
+        fs::read_to_string("input/day9.txt").expect("Should have been able to open te file");
+
+    let mut head = Position { x: 0, y: 0 };
+    let mut tails = Vec::from([
+        Position { x: 0, y: 0 },
+        Position { x: 0, y: 0 },
+        Position { x: 0, y: 0 },
+        Position { x: 0, y: 0 },
+        Position { x: 0, y: 0 },
+        Position { x: 0, y: 0 },
+        Position { x: 0, y: 0 },
+        Position { x: 0, y: 0 },
+        Position { x: 0, y: 0 },
+    ]);
+
+    let mut head_positions = Vec::new();
+    head_positions.push(head);
+    let mut tail_positions = Vec::new();
+    tail_positions.push(tails[tails.len() - 1]);
+
+    for mut instruction in contents.lines().map(|x| x.split_ascii_whitespace().take(2)) {
+        let direction = match instruction.next().unwrap() {
+            "L" => Some(Direction::Left),
+            "R" => Some(Direction::Right),
+            "U" => Some(Direction::Up),
+            "D" => Some(Direction::Down),
+            _ => None,
+        };
+        let direction = direction.unwrap();
+
+        let steps: u32 = instruction.next().unwrap().parse().unwrap();
+
+        // move
+        for _ in 0..steps {
+            move_head(&mut head, &direction);
+            head_positions.push(head);
+            // move tails
+            move_tail(&mut tails[0], &head);
+
+            for i in 1..tails.len() {
+                let fake_head = tails[i - 1].clone();
+                move_tail(&mut tails[i], &fake_head);
+            }
+
+            //record tail position
+            tail_positions.push(tails[tails.len() - 1]);
+        }
+
+        //println!("{direction:?}: {steps}");
+        //dbg!(&tails);
+    }
+
+    dbg!(tail_positions.iter().unique().count());
+}
+
+fn move_head(head: &mut Position, direction: &Direction) {
+    match direction {
+        Direction::Left => head.x -= 1,
+        Direction::Right => head.x += 1,
+        Direction::Up => head.y += 1,
+        Direction::Down => head.y -= 1,
+    }
+}
+
+fn move_tail(tail: &mut Position, head: &Position) {
+    let x_dev = tail.x - head.x;
+    let y_dev = tail.y - head.y;
+    //println!("{x_dev},{y_dev}");
+    // tail not far enough to move
+    if (-1..=1).contains(&x_dev) && (-1..=1).contains(&y_dev) {
+        return;
+    }
+
+    match (x_dev, y_dev) {
+        (1 | 0 | -1, _) => {
+            tail.x = head.x;
+            tail.y += -y_dev / 2;
+        }
+        (_, 1 | 0 | -1) => {
+            tail.y = head.y;
+            tail.x += -x_dev / 2;
+        }
+        (2 | -2, 2 | -2) => {
+            tail.x += -x_dev / 2;
+            tail.y += -y_dev / 2;
+        }
+        _ => (),
+    }
+}
+
+#[derive(Debug)]
+enum Direction {
+    Left,
+    Right,
+    Up,
+    Down,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+struct Position {
+    x: i32,
+    y: i32,
 }
 
 fn day_8() {
