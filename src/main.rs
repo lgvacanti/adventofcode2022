@@ -7,7 +7,55 @@ use std::str::FromStr;
 use std::vec::Vec;
 
 fn main() {
-    day_9();
+    day_10();
+}
+
+fn day_10() {
+    let contents =
+        fs::read_to_string("input/day10.txt").expect("Should have been able to open te file");
+
+    let mut X: i64 = 1;
+    let mut series: Vec<i64> = Vec::new();
+
+    for line in contents.lines() {
+        if line.starts_with("noop") {
+            series.push(X);
+        } else if line.starts_with("addx") {
+            series.push(X);
+            series.push(X);
+            X += line
+                .split_ascii_whitespace()
+                .nth(1)
+                .unwrap()
+                .parse::<i64>()
+                .unwrap();
+        }
+    }
+
+    for (cycle, val) in series.iter().enumerate() {
+        let hor_pos: i64 = (cycle % 40).try_into().unwrap();
+        if hor_pos == 0 {
+            println!();
+        }
+
+        if (hor_pos - val).abs() <= 1 {
+            print!("#");
+        } else {
+            print!(".");
+        }
+    }
+
+    println!();
+    println!("{series:?}");
+
+    let mut sum = 0;
+    for i in 0..6 {
+        let index = 20 + i * 40;
+        let val = series[index - 1];
+        sum += index as i64 * val;
+    }
+
+    println!("{sum}");
 }
 
 fn day_9() {
