@@ -12,7 +12,7 @@ fn main() {
 
 fn day_10() {
     let contents =
-        fs::read_to_string("input/day10.txt").expect("Should have been able to open te file");
+        fs::read_to_string("../input/day10.txt").expect("Should have been able to open te file");
 
     let mut X: i64 = 1;
     let mut series: Vec<i64> = Vec::new();
@@ -60,7 +60,7 @@ fn day_10() {
 
 fn day_9() {
     let contents =
-        fs::read_to_string("input/day9.txt").expect("Should have been able to open te file");
+        fs::read_to_string("../input/day9.txt").expect("Should have been able to open te file");
 
     let mut head = Position { x: 0, y: 0 };
     let mut tails = Vec::from([
@@ -165,7 +165,7 @@ struct Position {
 
 fn day_8() {
     let contents =
-        fs::read_to_string("input/day8.txt").expect("Should have been able to open te file");
+        fs::read_to_string("../input/day8.txt").expect("Should have been able to open te file");
 
     let mut arr = Vec::new();
     let width = contents.lines().next().unwrap().len();
@@ -301,7 +301,7 @@ fn scenic_score(arr: &Vec<u32>, x: usize, y: usize, width: usize) -> usize {
 
 fn day_7() {
     let contents =
-        fs::read_to_string("input/day7.txt").expect("Should have been able to open te file");
+        fs::read_to_string("../input/day7.txt").expect("Should have been able to open te file");
 
     let mut cwd: Vec<&str> = Vec::new();
 
@@ -380,7 +380,7 @@ fn day_7() {
 
 fn day_6() {
     let contents =
-        fs::read_to_string("input/day6.txt").expect("Should have been able to open te file");
+        fs::read_to_string("../input/day6.txt").expect("Should have been able to open te file");
 
     let mut four = Vec::new();
 
@@ -409,7 +409,7 @@ fn day_6() {
 
 fn day_5() {
     let contents =
-        fs::read_to_string("input/day5.txt").expect("Should have been able to open te file");
+        fs::read_to_string("../input/day5.txt").expect("Should have been able to open te file");
 
     let mut state: Vec<Vec<char>> = vec![
         vec![],
@@ -542,7 +542,7 @@ fn load_state(state: &mut Vec<Vec<char>>, contents: &str) {
 
 fn day_1() {
     let contents =
-        fs::read_to_string("input/day1.txt").expect("Should have been able to open te file");
+        fs::read_to_string("../input/day1.txt").expect("Should have been able to open te file");
 
     let mut current_calories: u32 = 0;
     let mut calorie_counts = Vec::new();
@@ -573,7 +573,7 @@ fn day_1() {
 
 fn day_2() {
     let contents =
-        fs::read_to_string("input/day2.txt").expect("Should have been able to open te file");
+        fs::read_to_string("../input/day2.txt").expect("Should have been able to open te file");
 
     let mut score = 0;
     for line in contents.lines() {
@@ -622,7 +622,7 @@ fn rps_round_score2(s: &str) -> u32 {
 
 fn day_3() {
     let contents =
-        fs::read_to_string("input/day3.txt").expect("Should have been able to open te file");
+        fs::read_to_string("../input/day3.txt").expect("Should have been able to open te file");
 
     let mut sum = 0;
 
@@ -677,7 +677,7 @@ fn day_3() {
 
 fn day_4() {
     let contents =
-        fs::read_to_string("input/day4.txt").expect("Should have been able to open te file");
+        fs::read_to_string("../input/day4.txt").expect("Should have been able to open te file");
 
     #[derive(Debug)]
     struct Assignment {
