@@ -1,14 +1,13 @@
 use nom::branch::alt;
-use nom::bytes::complete::{tag, take_until, take_while};
-use nom::character::complete::{alphanumeric1, digit1, newline};
-use nom::character::{is_alphabetic, is_alphanumeric, is_space};
+use nom::bytes::complete::{tag, take_while};
+use nom::character::complete::{digit1, newline};
 use nom::combinator::{map_res, value};
-use nom::error::{ErrorKind, ParseError};
+use nom::error::ErrorKind;
 use nom::multi::separated_list1;
 use nom::sequence::{preceded, separated_pair, terminated, tuple};
 use nom::IResult;
+use std::collections::HashMap;
 use std::fs;
-use std::ops;
 
 fn main() {
     let contents =
@@ -39,7 +38,8 @@ fn main() {
 
     let num_monkeys = monkeys.len();
 
-    for _ in 0..20 {
+    for j in 0..10000 {
+        //println!("{j}");
         for i in 0..num_monkeys {
             let output = monkeys[i].inspect();
 
@@ -52,21 +52,6 @@ fn main() {
     for (i, mnky) in monkeys.iter().enumerate() {
         println!("{i}: {}", mnky.inspect_count);
     }
-    // TODO: inspect
-
-    // take first item
-
-    // apply operation
-
-    // divide by three
-
-    // test
-
-    // move
-
-    // TODO: monkey turn
-
-    // TODO: round
 }
 
 fn parse_items(i: &str) -> IResult<&str, Vec<u32>> {
@@ -125,9 +110,14 @@ enum Operand {
     Num(u32),
 }
 
+#[derive(Debug, Clone)]
+struct Item {
+    divisible: HashMap<u32, u32>,
+}
+
 #[derive(Debug)]
 struct Monkey {
-    items: Vec<u32>,
+    items: Vec<Item>,
     operation: Operation,
     operand: Operand,
     test_div: u32,
@@ -147,10 +137,25 @@ impl Monkey {
         let (rest, true_throw) = terminated(parse_throw, newline)(rest).unwrap();
         let (rest, false_throw) = terminated(parse_throw, newline)(rest).unwrap();
 
+        let mut real_items: Vec<Item> = Vec::new();
+
+        let list_of_divisors = [17, 7, 13, 2, 19, 3, 5, 11, 23];
+
+        for item in items {
+            let mut item_hashmap = HashMap::new();
+            for i in list_of_divisors {
+                item_hashmap.insert(i, item % i);
+            }
+            let item_hashmap = Item {
+                divisible: item_hashmap,
+            };
+            real_items.push(item_hashmap);
+        }
+
         Ok((
             rest,
             Self {
-                items,
+                items: real_items,
                 operation,
                 operand,
                 test_div,
@@ -161,33 +166,41 @@ impl Monkey {
         ))
     }
 
-    fn op(&self, x: u32) -> u32 {
-        match (self.operation, self.operand) {
-            (Operation::Add, Operand::Old) => x + x,
-            (Operation::Add, Operand::Num(y)) => x + y,
-            (Operation::Multiply, Operand::Old) => x * x,
-            (Operation::Multiply, Operand::Num(y)) => x * y,
+    fn op(&self, x: &mut Item) {
+        let list_of_divisors = [17, 7, 13, 2, 19, 3, 5, 11, 23];
+
+        for key in list_of_divisors {
+            let v = x.divisible.get(&key).unwrap();
+            match (self.operation, self.operand) {
+                (Operation::Add, Operand::Old) => *x.divisible.get_mut(&key).unwrap() *= 2,
+                (Operation::Add, Operand::Num(y)) => *x.divisible.get_mut(&key).unwrap() += y,
+                (Operation::Multiply, Operand::Old) => *x.divisible.get_mut(&key).unwrap() *= *v,
+                (Operation::Multiply, Operand::Num(y)) => *x.divisible.get_mut(&key).unwrap() *= y,
+            }
+
+            *x.divisible.get_mut(&key).unwrap() %= key;
         }
     }
 
-    fn test(&self, x: u32) -> usize {
-        if x % self.test_div == 0 {
+    fn test(&self, x: &Item) -> usize {
+        if x.divisible.get(&self.test_div).unwrap() == &0 {
             self.true_throw
         } else {
             self.false_throw
         }
     }
 
-    fn inspect(&mut self) -> Vec<(u32, usize)> {
+    fn inspect(&mut self) -> Vec<(Item, usize)> {
         // inspect items and return list of (item, monkey to throw to)
+        let mut output: Vec<(Item, usize)> = Vec::new();
 
-        let mut output: Vec<(u32, usize)> = Vec::new();
-
-        // take first item
         for item in self.items.iter() {
-            let mut itemm = self.op(*item);
-            itemm /= 3;
-            output.push((itemm, self.test(itemm)));
+            let mut itemm = item.clone();
+            self.op(&mut itemm);
+
+            let dest = self.test(&itemm);
+
+            output.push((itemm, dest));
         }
 
         self.inspect_count += self.items.len() as u32;
