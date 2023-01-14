@@ -14,12 +14,55 @@ fn main() {
     let contents =
         fs::read_to_string("../input/day11.txt").expect("Should have been able to open te file");
     //println!("{contents:?}");
-    let (_, mnk) = Monkey::parse(&contents).unwrap();
-    dbg!(mnk);
+    //let (_, mnk) = Monkey::parse(&contents).unwrap();
 
-    // TODO: parse multiple monkeys
+    let mut monkeys = Vec::new();
 
+    let (rest, mnk) = Monkey::parse(&contents).unwrap();
+    monkeys.push(mnk);
+    let (rest, mnk) = Monkey::parse(rest.strip_prefix('\n').unwrap()).unwrap();
+    monkeys.push(mnk);
+    let (rest, mnk) = Monkey::parse(rest.strip_prefix('\n').unwrap()).unwrap();
+    monkeys.push(mnk);
+    let (rest, mnk) = Monkey::parse(rest.strip_prefix('\n').unwrap()).unwrap();
+    monkeys.push(mnk);
+    let (rest, mnk) = Monkey::parse(rest.strip_prefix('\n').unwrap()).unwrap();
+    monkeys.push(mnk);
+    let (rest, mnk) = Monkey::parse(rest.strip_prefix('\n').unwrap()).unwrap();
+    monkeys.push(mnk);
+    let (rest, mnk) = Monkey::parse(rest.strip_prefix('\n').unwrap()).unwrap();
+    monkeys.push(mnk);
+    let (_, mnk) = Monkey::parse(rest.strip_prefix('\n').unwrap()).unwrap();
+    monkeys.push(mnk);
+
+    //dbg!(monkeys);
+
+    let num_monkeys = monkeys.len();
+
+    for _ in 0..20 {
+        for i in 0..num_monkeys {
+            let output = monkeys[i].inspect();
+
+            for (item, dest) in output {
+                monkeys[dest].items.push(item);
+            }
+        }
+    }
+
+    for (i, mnky) in monkeys.iter().enumerate() {
+        println!("{i}: {}", mnky.inspect_count);
+    }
     // TODO: inspect
+
+    // take first item
+
+    // apply operation
+
+    // divide by three
+
+    // test
+
+    // move
 
     // TODO: monkey turn
 
@@ -70,13 +113,13 @@ fn parse_throw(i: &str) -> IResult<&str, usize> {
     )(i)
 }
 
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Copy)]
 enum Operation {
     Add,
     Multiply,
 }
 
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Debug, Copy)]
 enum Operand {
     Old,
     Num(u32),
@@ -90,6 +133,7 @@ struct Monkey {
     test_div: u32,
     true_throw: usize,
     false_throw: usize,
+    inspect_count: u32,
 }
 
 impl Monkey {
@@ -112,11 +156,46 @@ impl Monkey {
                 test_div,
                 true_throw,
                 false_throw,
+                inspect_count: 0,
             },
         ))
     }
 
-    //fn inspect(&self, item: u32) -> usize {}
+    fn op(&self, x: u32) -> u32 {
+        match (self.operation, self.operand) {
+            (Operation::Add, Operand::Old) => x + x,
+            (Operation::Add, Operand::Num(y)) => x + y,
+            (Operation::Multiply, Operand::Old) => x * x,
+            (Operation::Multiply, Operand::Num(y)) => x * y,
+        }
+    }
+
+    fn test(&self, x: u32) -> usize {
+        if x % self.test_div == 0 {
+            self.true_throw
+        } else {
+            self.false_throw
+        }
+    }
+
+    fn inspect(&mut self) -> Vec<(u32, usize)> {
+        // inspect items and return list of (item, monkey to throw to)
+
+        let mut output: Vec<(u32, usize)> = Vec::new();
+
+        // take first item
+        for item in self.items.iter() {
+            let mut itemm = self.op(*item);
+            itemm /= 3;
+            output.push((itemm, self.test(itemm)));
+        }
+
+        self.inspect_count += self.items.len() as u32;
+        // empty items from this monkey after inspecting
+        self.items = Vec::new();
+
+        output
+    }
 }
 
 #[cfg(test)]
